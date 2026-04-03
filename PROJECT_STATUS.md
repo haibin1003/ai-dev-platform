@@ -12,7 +12,7 @@
 | PRD-001 工作流引擎需求 | ✅ 完成 | 2026-04-03 | - |
 | ARCH-001 工作流引擎架构 | ✅ 完成 | 2026-04-03 | AI 评审通过 |
 | DESIGN-001 工作流引擎详细设计 | ✅ 完成 | 2026-04-03 | 评审通过 |
-| feature/PRD-001-workflow-engine | 🔄 开发中 | - | Phase 5: 测试验证 |
+| feature/PRD-001-workflow-engine | ✅ 完成 | 2026-04-03 | 已合并到master，70个测试通过 |
 
 ---
 
@@ -37,7 +37,7 @@
 
 | 功能 | 分支 | PR | 测试覆盖率 | 状态 |
 |------|------|-----|-----------|------|
-| (暂无) | - | - | - | - |
+| 工作流引擎核心 | feature/PRD-001-workflow-engine | #1 | 70个测试通过 | ✅ 已合并 |
 
 ---
 
@@ -64,10 +64,10 @@
 | 检查项 | 状态 | 最后验证 | 备注 |
 |--------|------|---------|------|
 | 编译正常 | ✅ | 2026-04-03 | - |
-| 测试通过 | ⚠️ | 2026-04-03 | 无测试用例 |
+| 测试通过 | ✅ | 2026-04-03 | 70个测试全部通过 |
 | Checkstyle | ✅ | 2026-04-03 | - |
 | SpotBugs | ✅ | 2026-04-03 | - |
-| JaCoCo ≥80% | ❌ | - | 无测试，无覆盖率 |
+| JaCoCo ≥80% | ✅ | 2026-04-03 | Domain层≥95% |
 
 ---
 
@@ -80,7 +80,7 @@
 | 项目配置记录 | PROJECT.md | ✅ 完成 | - |
 | 需求文档 | docs/requirements/PRD-001-workflow-engine.md | ✅ 完成 | 待正式评审 |
 | 架构设计 | docs/architecture/ARCH-001-workflow-engine.md | ✅ 完成 | AI 评审通过 |
-| 详细设计 | docs/design/DESIGN-001-workflow-engine.md | 🔄 进行中 | 待评审 |
+| 详细设计 | docs/design/DESIGN-001-workflow-engine.md | ✅ 完成 | 已评审 |
 | Git 规范 | docs/standards/STANDARD-01-git-workflow.md | ✅ 完成 | - |
 | 代码风格 | docs/standards/STANDARD-02-code-style.md | ✅ 完成 | - |
 | DDD 规范 | docs/standards/STANDARD-03-ddd-practice.md | ✅ 完成 | - |
@@ -135,6 +135,7 @@ git branch -a | grep feature/
 | 2026-04-03 | 初始化工程状态文档 | AI Assistant | - |
 | 2026-04-03 | 创建 ARCH-001 架构设计文档、STANDARD-07 API 设计规范 | AI Assistant | 补充缺失规范 |
 | 2026-04-03 | 创建 DESIGN-001 详细设计文档 | AI Assistant | 完整设计文档 |
+| 2026-04-03 | 工作流引擎功能合并到master | AI Assistant | 70个测试全部通过，PR #1 |
 
 ---
 
