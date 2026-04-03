@@ -1,0 +1,131 @@
+spring:
+  application:
+    name: ai-dev-platform
+  
+  profiles:
+    active: dev
+  
+  datasource:
+    url: jdbc:h2:file:./data/devplatform;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    open-in-view: false
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+  
+  # 压缩响应
+  compression:
+    enabled: true
+    mime-types: application/json,application/xml,text/html,text/xml,text/plain
+
+# 日志配置
+logging:
+  level:
+    root: INFO
+    com.aidev: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  file:
+    name: logs/application.log
+
+# 应用配置
+app:
+  # 工作流引擎配置
+  workflow:
+    max-concurrent: 10
+    default-timeout: 30
+    workspace-root: ./workspace
+  
+  # Agent 配置
+  agent:
+    adapters:
+      claude:
+        enabled: true
+        cli-path: claude
+        default-model: claude-3-5-sonnet-20241022
+        max-retries: 3
+      kimi:
+        enabled: false
+        cli-path: kimicode
+        api-key: ${KIMI_API_KEY:}
+
+# 管理端点
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  endpoint:
+    health:
+      show-details: when_authorized
+
+---
+# 测试环境配置
+spring:
+  config:
+    activate:
+      on-profile: test
+  
+  datasource:
+    url: jdbc:tc:postgresql:15:///testdb
+    driver-class-name: org.testcontainers.jdbc.ContainerDatabaseDriver
+  
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+
+logging:
+  level:
+    root: WARN
+    com.aidev: INFO
+
+---
+# 生产环境配置
+spring:
+  config:
+    activate:
+      on-profile: prod
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5432/aidev
+    driver-class-name: org.postgresql.Driver
+    username: ${DB_USERNAME:aidev}
+    password: ${DB_PASSWORD:}
+    hikari:
+      maximum-pool-size: 20
+      minimum-idle: 5
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+
+server:
+  port: ${SERVER_PORT:8080}
+
+logging:
+  level:
+    root: WARN
+    com.aidev: INFO
+  file:
+    name: /var/log/aidev/application.log
