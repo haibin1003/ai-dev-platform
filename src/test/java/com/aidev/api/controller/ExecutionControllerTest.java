@@ -100,6 +100,44 @@ class ExecutionControllerTest {
             .andExpect(jsonPath("$.length()").value(1));
     }
 
+    @Test
+    @DisplayName("应该根据工作流ID筛选执行")
+    void shouldFilterExecutionsByWorkflowId() throws Exception {
+        // Given - 创建执行
+        createExecution();
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/executions")
+                .param("workflowId", workflowId))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @DisplayName("应该根据状态筛选执行")
+    void shouldFilterExecutionsByStatus() throws Exception {
+        // Given - 创建执行
+        createExecution();
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/executions")
+                .param("status", "PENDING"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray());
+    }
+
+    @Test
+    @DisplayName("应该获取所有执行列表")
+    void shouldListAllExecutions() throws Exception {
+        // Given - 创建执行
+        createExecution();
+
+        // When & Then
+        mockMvc.perform(get("/api/v1/executions"))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$").isArray());
+    }
+
     // Helper methods
     private String createAndActivateWorkflow() throws Exception {
         CreateWorkflowRequest request = new CreateWorkflowRequest(
