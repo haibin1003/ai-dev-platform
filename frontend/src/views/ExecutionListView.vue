@@ -10,20 +10,17 @@
         <el-table-column prop="workflowName" label="工作流" min-width="150" />
         <el-table-column prop="status" label="状态" width="120">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ row.status }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="progress" label="进度" width="200">
-          <template #default="{ row }">
-            <el-progress
-              :percentage="Math.round((row.completedTasks / row.totalTasks) * 100)"
-              :status="getProgressStatus(row.status)"
-            />
+            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="startedAt" label="开始时间" width="180">
           <template #default="{ row }">
             {{ formatDate(row.startedAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column prop="completedAt" label="完成时间" width="180">
+          <template #default="{ row }">
+            {{ formatDate(row.completedAt) }}
           </template>
         </el-table-column>
         <el-table-column label="操作" width="150" fixed="right">
@@ -33,7 +30,7 @@
               link
               type="danger"
               @click="cancelExecution(row.id)"
-              v-if="row.status === 'RUNNING'"
+              v-if="row.status === 'RUNNING' || row.status === 'PENDING'"
             >
               取消
             </el-button>
@@ -41,55 +38,30 @@
         </el-table-column>
       </el-table>
 
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :total="total"
-          layout="total, prev, pager, next"
-          @current-change="loadExecutions"
-        />
-      </div>
+      <el-empty v-if="executions.length === 0 && !loading" description="暂无执行记录" />
     </el-card>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import { executionApi } from '@/services/workflow'
+import type { WorkflowExecution } from '@/types/workflow'
 
-interface Execution {
-  id: string
-  workflowName: string
-  status: string
-  completedTasks: number
-  totalTasks: number
-  startedAt: string
-}
-
-const executions = ref<Execution[]>([])
+const executions = ref<WorkflowExecution[]>([])
 const loading = ref(false)
-const page = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
 
 const loadExecutions = async () => {
   loading.value = true
-  // TODO: 调用后端API
-  setTimeout(() => {
-    executions.value = [
-      {
-        id: 'exec-001',
-        workflowName: '示例工作流',
-        status: 'RUNNING',
-        completedTasks: 2,
-        totalTasks: 5,
-        startedAt: '2026-04-03T10:00:00',
-      },
-    ]
-    total.value = 1
+  try {
+    executions.value = await executionApi.list()
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载失败')
+    executions.value = []
+  } finally {
     loading.value = false
-  }, 500)
+  }
 }
 
 const viewDetail = (id: string) => {
@@ -97,12 +69,19 @@ const viewDetail = (id: string) => {
 }
 
 const cancelExecution = async (id: string) => {
-  // TODO: 调用后端API
-  ElMessage.success('执行已取消')
-  loadExecutions()
+  try {
+    await ElMessageBox.confirm('确定要取消这个执行吗？', '确认取消', {
+      type: 'warning',
+    })
+    await executionApi.cancel(id)
+    ElMessage.success('执行已取消')
+    loadExecutions()
+  } catch {
+    // 取消操作
+  }
 }
 
-const getStatusType = (status: string) => {
+const getStatusType = (status?: string) => {
   const map: Record<string, string> = {
     PENDING: 'info',
     RUNNING: 'primary',
@@ -110,16 +89,22 @@ const getStatusType = (status: string) => {
     FAILED: 'danger',
     CANCELLED: 'warning',
   }
-  return map[status] || 'info'
+  return map[status || 'PENDING'] || 'info'
 }
 
-const getProgressStatus = (status: string) => {
-  if (status === 'COMPLETED') return 'success'
-  if (status === 'FAILED') return 'exception'
-  return ''
+const getStatusText = (status?: string) => {
+  const map: Record<string, string> = {
+    PENDING: '等待中',
+    RUNNING: '运行中',
+    COMPLETED: '已完成',
+    FAILED: '失败',
+    CANCELLED: '已取消',
+  }
+  return map[status || 'PENDING'] || status
 }
 
-const formatDate = (date: string) => {
+const formatDate = (date?: string) => {
+  if (!date) return '-'
   return new Date(date).toLocaleString()
 }
 
@@ -139,11 +124,5 @@ onMounted(() => {
 
 .table-card {
   min-height: 500px;
-}
-
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

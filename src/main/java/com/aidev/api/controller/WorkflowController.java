@@ -50,6 +50,14 @@ public class WorkflowController {
         return ResponseEntity.ok(workflow);
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<WorkflowResponse> updateWorkflow(
+            @PathVariable String id,
+            @Valid @RequestBody CreateWorkflowRequest request) {
+        WorkflowResponse response = workflowAppService.updateWorkflow(id, request);
+        return ResponseEntity.ok(response);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteWorkflow(@PathVariable String id) {
         workflowAppService.deleteWorkflow(id);
@@ -78,5 +86,18 @@ public class WorkflowController {
         return ResponseEntity.ok(executions);
     }
 
+    @PostMapping("/validate")
+    public ResponseEntity<ValidationResponse> validateWorkflow(
+            @Valid @RequestBody CreateWorkflowRequest request) {
+        List<String> errors = workflowAppService.validateWorkflow(request);
+        if (errors.isEmpty()) {
+            return ResponseEntity.ok(new ValidationResponse(true, null));
+        } else {
+            return ResponseEntity.ok(new ValidationResponse(false, errors));
+        }
+    }
+
     public record ExecuteWorkflowRequest(java.util.Map<String, String> variables) {}
+
+    public record ValidationResponse(boolean valid, List<String> errors) {}
 }

@@ -17,7 +17,7 @@
         </el-table-column>
         <el-table-column prop="status" label="状态" width="120">
           <template #default="{ row }">
-            <el-tag :type="getStatusType(row.status)">{{ row.status }}</el-tag>
+            <el-tag :type="getStatusType(row.status)">{{ getStatusText(row.status) }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="createdAt" label="创建时间" width="180">
@@ -25,29 +25,30 @@
             {{ formatDate(row.createdAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="250" fixed="right">
+        <el-table-column prop="updatedAt" label="更新时间" width="180">
           <template #default="{ row }">
-            <el-button link type="primary" @click="executeWorkflow(row.id)" :disabled="row.status !== 'ACTIVE'">
+            {{ formatDate(row.updatedAt) }}
+          </template>
+        </el-table-column>
+        <el-table-column label="操作" width="300" fixed="right">
+          <template #default="{ row }">
+            <el-button link type="primary" @click="executeWorkflow(row.id)">
+              <el-icon><VideoPlay /></el-icon>
               执行
             </el-button>
-            <el-button link type="primary" @click="editWorkflow(row.id)">编辑</el-button>
-            <el-button link type="success" @click="activateWorkflow(row.id)" v-if="row.status === 'DRAFT'">
-              激活
+            <el-button link type="primary" @click="editWorkflow(row.id)">
+              <el-icon><Edit /></el-icon>
+              编辑
             </el-button>
-            <el-button link type="danger" @click="deleteWorkflow(row.id)">删除</el-button>
+            <el-button link type="danger" @click="deleteWorkflow(row.id)">
+              <el-icon><Delete /></el-icon>
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
 
-      <div class="pagination">
-        <el-pagination
-          v-model:current-page="page"
-          v-model:page-size="pageSize"
-          :total="total"
-          layout="total, prev, pager, next"
-          @current-change="loadWorkflows"
-        />
-      </div>
+      <el-empty v-if="workflows.length === 0 && !loading" description="暂无工作流" />
     </el-card>
   </div>
 </template>
@@ -56,32 +57,24 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { workflowApi } from '@/services/workflow'
+import type { Workflow } from '@/types/workflow'
 
 const router = useRouter()
 
-interface Workflow {
-  id: string
-  name: string
-  status: string
-  createdAt: string
-}
-
 const workflows = ref<Workflow[]>([])
 const loading = ref(false)
-const page = ref(1)
-const pageSize = ref(20)
-const total = ref(0)
 
 const loadWorkflows = async () => {
   loading.value = true
-  // TODO: 调用后端API
-  setTimeout(() => {
-    workflows.value = [
-      { id: '1', name: '示例工作流', status: 'DRAFT', createdAt: '2026-04-03T10:00:00' },
-    ]
-    total.value = 1
+  try {
+    workflows.value = await workflowApi.list()
+  } catch (error: any) {
+    ElMessage.error(error.message || '加载失败')
+    workflows.value = []
+  } finally {
     loading.value = false
-  }, 500)
+  }
 }
 
 const createWorkflow = () => {
@@ -93,14 +86,13 @@ const editWorkflow = (id: string) => {
 }
 
 const executeWorkflow = async (id: string) => {
-  // TODO: 调用后端API
-  ElMessage.success('工作流执行已启动')
-}
-
-const activateWorkflow = async (id: string) => {
-  // TODO: 调用后端API
-  ElMessage.success('工作流已激活')
-  loadWorkflows()
+  try {
+    const executionId = await workflowApi.execute(id)
+    ElMessage.success(`工作流执行已启动，执行ID: ${executionId}`)
+    router.push('/executions')
+  } catch (error: any) {
+    ElMessage.error(error.message || '执行失败')
+  }
 }
 
 const deleteWorkflow = async (id: string) => {
@@ -108,7 +100,7 @@ const deleteWorkflow = async (id: string) => {
     await ElMessageBox.confirm('确定要删除这个工作流吗？', '确认删除', {
       type: 'warning',
     })
-    // TODO: 调用后端API
+    await workflowApi.delete(id)
     ElMessage.success('删除成功')
     loadWorkflows()
   } catch {
@@ -116,16 +108,26 @@ const deleteWorkflow = async (id: string) => {
   }
 }
 
-const getStatusType = (status: string) => {
+const getStatusType = (status?: string) => {
   const map: Record<string, string> = {
     DRAFT: 'info',
-    ACTIVE: 'success',
+    PUBLISHED: 'success',
     ARCHIVED: 'danger',
   }
-  return map[status] || 'info'
+  return map[status || 'DRAFT'] || 'info'
 }
 
-const formatDate = (date: string) => {
+const getStatusText = (status?: string) => {
+  const map: Record<string, string> = {
+    DRAFT: '草稿',
+    PUBLISHED: '已发布',
+    ARCHIVED: '已归档',
+  }
+  return map[status || 'DRAFT'] || status
+}
+
+const formatDate = (date?: string) => {
+  if (!date) return '-'
   return new Date(date).toLocaleString()
 }
 
@@ -148,11 +150,5 @@ onMounted(() => {
 
 .table-card {
   min-height: 500px;
-}
-
-.pagination {
-  margin-top: 20px;
-  display: flex;
-  justify-content: flex-end;
 }
 </style>

@@ -75,8 +75,132 @@ public class WorkflowAppService {
         return toResponse(workflow);
     }
 
+    public WorkflowResponse updateWorkflow(String id, CreateWorkflowRequest request) {
+        // 简单实现：删除旧工作流，创建新的
+        Workflow existing = workflowRepository.findById(WorkflowId.of(id))
+            .orElseThrow(() -> new RuntimeException("Workflow not found: " + id));
+
+        // 创建新的工作流，保留ID
+        Workflow workflow = Workflow.of(WorkflowId.of(id), request.name(), request.description());
+
+        // 添加节点
+        if (request.definition() != null && request.definition().nodes() != null) {
+            for (CreateWorkflowRequest.WorkflowDefinitionDTO.NodeDTO nodeDto : request.definition().nodes()) {
+                Node node = Node.createTask(nodeDto.id(), nodeDto.name());
+                if (nodeDto.agentCode() != null) {
+                    node.withAgent(nodeDto.agentCode());
+                }
+                workflow.addNode(node);
+            }
+
+            // 添加边
+            if (request.definition().edges() != null) {
+                for (CreateWorkflowRequest.WorkflowDefinitionDTO.EdgeDTO edgeDto : request.definition().edges()) {
+                    workflow.connect(edgeDto.from(), edgeDto.to());
+                }
+            }
+        }
+
+        // 添加变量
+        if (request.variables() != null) {
+            request.variables().forEach(workflow::setVariable);
+        }
+
+        Workflow saved = workflowRepository.save(workflow);
+        return toResponse(saved);
+    }
+
     public void deleteWorkflow(String id) {
         workflowRepository.delete(WorkflowId.of(id));
+    }
+
+    public List<String> validateWorkflow(CreateWorkflowRequest request) {
+        List<String> errors = new java.util.ArrayList<>();
+
+        if (request.definition() == null) {
+            errors.add("工作流定义不能为空");
+            return errors;
+        }
+
+        // 检查节点
+        if (request.definition().nodes() == null || request.definition().nodes().isEmpty()) {
+            errors.add("至少需要定义一个节点");
+        } else {
+            // 检查开始节点
+            long startNodes = request.definition().nodes().stream()
+                .filter(n -> "START".equalsIgnoreCase(n.type()))
+                .count();
+            if (startNodes == 0) {
+                errors.add("缺少开始节点");
+            } else if (startNodes > 1) {
+                errors.add("只能有一个开始节点");
+            }
+
+            // 检查结束节点
+            long endNodes = request.definition().nodes().stream()
+                .filter(n -> "END".equalsIgnoreCase(n.type()))
+                .count();
+            if (endNodes == 0) {
+                errors.add("缺少结束节点");
+            }
+
+            // 检查任务节点配置
+            for (CreateWorkflowRequest.WorkflowDefinitionDTO.NodeDTO node : request.definition().nodes()) {
+                if ("TASK".equalsIgnoreCase(node.type()) && node.agentCode() == null) {
+                    errors.add("任务节点 '" + node.name() + "' 未配置Agent");
+                }
+            }
+        }
+
+        // 检查循环依赖
+        if (request.definition().edges() != null && hasCycle(request.definition())) {
+            errors.add("工作流存在循环依赖");
+        }
+
+        return errors;
+    }
+
+    private boolean hasCycle(CreateWorkflowRequest.WorkflowDefinitionDTO definition) {
+        if (definition.nodes() == null || definition.edges() == null) {
+            return false;
+        }
+
+        java.util.Map<String, java.util.List<String>> adjList = new java.util.HashMap<>();
+        for (CreateWorkflowRequest.WorkflowDefinitionDTO.NodeDTO node : definition.nodes()) {
+            adjList.put(node.id(), new java.util.ArrayList<>());
+        }
+        for (CreateWorkflowRequest.WorkflowDefinitionDTO.EdgeDTO edge : definition.edges()) {
+            adjList.computeIfAbsent(edge.from(), k -> new java.util.ArrayList<>()).add(edge.to());
+        }
+
+        java.util.Set<String> visited = new java.util.HashSet<>();
+        java.util.Set<String> recStack = new java.util.HashSet<>();
+
+        java.util.function.Function<String, Boolean> dfs = new java.util.function.Function<>() {
+            @Override
+            public Boolean apply(String nodeId) {
+                visited.add(nodeId);
+                recStack.add(nodeId);
+
+                for (String neighbor : adjList.getOrDefault(nodeId, java.util.Collections.emptyList())) {
+                    if (!visited.contains(neighbor)) {
+                        if (apply(neighbor)) return true;
+                    } else if (recStack.contains(neighbor)) {
+                        return true;
+                    }
+                }
+
+                recStack.remove(nodeId);
+                return false;
+            }
+        };
+
+        for (String nodeId : adjList.keySet()) {
+            if (!visited.contains(nodeId)) {
+                if (dfs.apply(nodeId)) return true;
+            }
+        }
+        return false;
     }
 
     public WorkflowResponse activateWorkflow(String id) {
