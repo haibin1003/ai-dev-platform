@@ -42,18 +42,21 @@ public class DAGScheduler {
     private final com.aidev.domain.repository.WorkflowRepository workflowRepository;
     private final List<AgentAdapter> agentAdapters;
     private final ApplicationEventPublisher eventPublisher;
+    private final LogPushService logPushService;
     private final ExecutorService executorService;
 
     public DAGScheduler(TaskRepository taskRepository,
                        ExecutionRepository executionRepository,
                        com.aidev.domain.repository.WorkflowRepository workflowRepository,
                        List<AgentAdapter> agentAdapters,
-                       ApplicationEventPublisher eventPublisher) {
+                       ApplicationEventPublisher eventPublisher,
+                       LogPushService logPushService) {
         this.taskRepository = taskRepository;
         this.executionRepository = executionRepository;
         this.workflowRepository = workflowRepository;
         this.agentAdapters = agentAdapters;
         this.eventPublisher = eventPublisher;
+        this.logPushService = logPushService;
         // 创建有界线程池用于并发任务执行
         int availableProcessors = Runtime.getRuntime().availableProcessors();
         int maxPoolSize = Math.max(4, availableProcessors * 2);
@@ -181,6 +184,12 @@ public class DAGScheduler {
         freshTask.start();
         taskRepository.save(freshTask);
 
+        // 推送任务开始日志
+        String executionId = freshTask.getExecutionId().getValue();
+        logPushService.pushTaskLog(executionId, freshTask.getId(), "INFO",
+            "任务 " + freshTask.getNodeId().getValue() + " 开始执行");
+        logPushService.pushTaskStatus(executionId, freshTask.getId(), "RUNNING");
+
         logger.info("Executing task {} with node {}", freshTask.getId(), freshTask.getNodeId());
 
         try {
@@ -190,11 +199,20 @@ public class DAGScheduler {
             // 执行任务
             ExecutionResult result = adapter.execute(freshTask);
 
+            // 推送任务执行日志
+            logPushService.pushTaskLog(executionId, freshTask.getId(), "INFO",
+                "任务执行完成，退出码: " + result.getExitCode());
+
             // 处理执行结果（在新事务中）
             handleTaskCompleted(freshTask, result, edges);
 
         } catch (Exception e) {
             logger.error("Task execution failed: {}", freshTask.getId(), e);
+
+            // 推送错误日志
+            logPushService.pushTaskLog(executionId, freshTask.getId(), "ERROR",
+                "任务执行失败: " + e.getMessage());
+
             handleTaskFailed(freshTask, e.getMessage());
         }
     }
@@ -218,6 +236,11 @@ public class DAGScheduler {
             .orElseThrow(() -> new IllegalStateException("Execution not found: " + task.getExecutionId()));
         execution.taskCompleted(task.getId());
         executionRepository.save(execution);
+
+        // 推送完成状态
+        String executionId = task.getExecutionId().getValue();
+        logPushService.pushTaskStatus(executionId, task.getId(), "COMPLETED");
+        logPushService.pushExecutionStatus(executionId, execution.getStatus().name());
 
         // 发布领域事件
         eventPublisher.publishEvent(new TaskCompletedEvent(
@@ -252,8 +275,21 @@ public class DAGScheduler {
         execution.taskFailed(task.getId());
         executionRepository.save(execution);
 
-        // 发布领域事件
+        // 推送失败状态
+        String executionId = task.getExecutionId().getValue();
+        logPushService.pushTaskStatus(executionId, task.getId(), "FAILED");
+        logPushService.pushTaskLog(executionId, task.getId(), "ERROR",
+            "任务失败: " + errorMessage);
+
+        // 如果可以重试，推送重试日志
         boolean retryable = task.canRetry();
+        if (retryable) {
+            logPushService.pushTaskLog(executionId, task.getId(), "WARN",
+                "任务将在 " + task.getRetryCount() + "/" + task.getMaxRetries() + " 次尝试后重试");
+        }
+        logPushService.pushExecutionStatus(executionId, execution.getStatus().name());
+
+        // 发布领域事件
         eventPublisher.publishEvent(new TaskFailedEvent(
             task.getId(),
             task.getExecutionId(),
