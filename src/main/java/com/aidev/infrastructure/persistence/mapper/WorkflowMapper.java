@@ -4,10 +4,12 @@ import com.aidev.domain.model.aggregate.Workflow;
 import com.aidev.domain.model.entity.Edge;
 import com.aidev.domain.model.entity.Node;
 import com.aidev.domain.model.entity.NodeId;
+import com.aidev.domain.model.entity.NodeType;
 import com.aidev.domain.model.valueobject.WorkflowId;
 import com.aidev.domain.model.valueobject.WorkflowStatus;
 import com.aidev.infrastructure.persistence.entity.WorkflowJpaEntity;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.stereotype.Component;
 
@@ -62,10 +64,49 @@ public class WorkflowMapper {
             entity.getDescription()
         );
 
-        // 使用反射设置私有字段状态
-        // 注意：实际项目中可能需要更优雅的方式
+        // 恢复工作流状态
+        restoreWorkflowState(workflow, entity);
 
         return workflow;
+    }
+
+    private void restoreWorkflowState(Workflow workflow, WorkflowJpaEntity entity) {
+        // 从JSON恢复定义（节点和边）
+        if (entity.getDefinitionJson() != null && !entity.getDefinitionJson().isEmpty()) {
+            DefinitionDto definition = fromJson(entity.getDefinitionJson(), DefinitionDto.class);
+
+            // 添加节点
+            for (NodeDto nodeDto : definition.nodes()) {
+                Node node = new Node(NodeId.of(nodeDto.id()), nodeDto.name(),
+                    NodeType.valueOf(nodeDto.type()));
+                if (nodeDto.agentCode() != null) {
+                    node.withAgent(nodeDto.agentCode());
+                }
+                if (nodeDto.config() != null) {
+                    nodeDto.config().forEach(node::withConfig);
+                }
+                workflow.addNode(node);
+            }
+
+            // 添加边
+            for (EdgeDto edgeDto : definition.edges()) {
+                workflow.connect(edgeDto.from(), edgeDto.to());
+            }
+        }
+
+        // 恢复变量
+        if (entity.getVariablesJson() != null && !entity.getVariablesJson().isEmpty()) {
+            Map<String, String> variables = fromJson(entity.getVariablesJson(),
+                new TypeReference<Map<String, String>>() {});
+            variables.forEach(workflow::setVariable);
+        }
+
+        // 激活工作流（如果需要）
+        if ("ACTIVE".equals(entity.getStatus())) {
+            workflow.activate();
+        } else if ("ARCHIVED".equals(entity.getStatus())) {
+            workflow.archive();
+        }
     }
 
     private String toJson(Object obj) {
@@ -79,6 +120,14 @@ public class WorkflowMapper {
     private <T> T fromJson(String json, Class<T> clazz) {
         try {
             return objectMapper.readValue(json, clazz);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("Failed to parse JSON", e);
+        }
+    }
+
+    private <T> T fromJson(String json, TypeReference<T> typeRef) {
+        try {
+            return objectMapper.readValue(json, typeRef);
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse JSON", e);
         }
