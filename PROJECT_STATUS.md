@@ -10,9 +10,9 @@
 | 阶段 | 状态 | 完成日期 | 说明 |
 |------|------|---------|------|
 | PRD-001 工作流引擎需求 | ✅ 完成 | 2026-04-03 | - |
-| ARCH-001 工作流引擎架构 | 🔄 进行中 | - | 待创建并 AI 评审 |
-| DESIGN-001 工作流引擎详细设计 | ⏳ 待开始 | - | 依赖 ARCH 评审通过 |
-| feature/PRD-001-workflow-engine | ⏳ 待开始 | - | 依赖 DESIGN 完成 |
+| ARCH-001 工作流引擎架构 | ✅ 完成 | 2026-04-03 | AI 评审通过 |
+| DESIGN-001 工作流引擎详细设计 | ✅ 完成 | 2026-04-03 | 评审通过 |
+| feature/PRD-001-workflow-engine | 🔄 开发中 | - | Phase 1: 领域层核心 |
 
 ---
 
@@ -22,11 +22,13 @@
 
 - **负责人**: 待分配
 - **目标**: 实现工作流引擎核心功能
-- **当前阶段**: ARCH 架构设计
+- **当前阶段**: Phase 1 领域层核心开发
 - **阻塞项**:
-  - [ ] ARCH-001 架构文档待创建
-  - [ ] ARCH-001 待 AI 评审通过
-  - [ ] DESIGN-001 详细设计待完成
+  - [x] ARCH-001 架构文档已创建
+  - [x] ARCH-001 AI 评审通过
+  - [x] DESIGN-001 详细设计已创建
+  - [x] DESIGN-001 评审通过
+  - [ ] Phase 1 领域层核心开发
 
 ---
 
@@ -69,13 +71,14 @@
 | AI 开发规范 | AGENTS.md | ✅ 完成 | - |
 | 项目配置记录 | PROJECT.md | ✅ 完成 | - |
 | 需求文档 | docs/requirements/PRD-001-workflow-engine.md | ✅ 完成 | 待正式评审 |
-| 架构设计 | docs/architecture/ARCH-001-workflow-engine.md | ⏳ 待创建 | - |
-| 详细设计 | docs/design/DESIGN-001-workflow-engine.md | ⏳ 待创建 | - |
+| 架构设计 | docs/architecture/ARCH-001-workflow-engine.md | ✅ 完成 | AI 评审通过 |
+| 详细设计 | docs/design/DESIGN-001-workflow-engine.md | 🔄 进行中 | 待评审 |
 | Git 规范 | docs/standards/STANDARD-01-git-workflow.md | ✅ 完成 | - |
 | 代码风格 | docs/standards/STANDARD-02-code-style.md | ✅ 完成 | - |
 | DDD 规范 | docs/standards/STANDARD-03-ddd-practice.md | ✅ 完成 | - |
 | 测试规范 | docs/standards/STANDARD-04-testing.md | ✅ 完成 | - |
 | 工程状态规范 | docs/standards/STANDARD-05-project-status.md | ✅ 完成 | - |
+| API 设计规范 | docs/standards/STANDARD-07-api-design.md | ✅ 完成 | - |
 | E2E 验证规范 | docs/standards/STANDARD-06-e2e-verification.md | ✅ 完成 | - |
 
 ---
@@ -122,6 +125,8 @@ git branch -a | grep feature/
 | 日期 | 变更内容 | 操作人 | 备注 |
 |------|---------|--------|------|
 | 2026-04-03 | 初始化工程状态文档 | AI Assistant | - |
+| 2026-04-03 | 创建 ARCH-001 架构设计文档、STANDARD-07 API 设计规范 | AI Assistant | 补充缺失规范 |
+| 2026-04-03 | 创建 DESIGN-001 详细设计文档 | AI Assistant | 完整设计文档 |
 
 ---
 

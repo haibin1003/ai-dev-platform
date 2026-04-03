@@ -109,6 +109,7 @@ curl -X POST http://localhost:8080/api/v1/workflows/{id}/execute \
 3. [代码风格规范](./docs/standards/STANDARD-02-code-style.md)
 4. [DDD 实践规范](./docs/standards/STANDARD-03-ddd-practice.md)
 5. [测试规范](./docs/standards/STANDARD-04-testing.md)
+6. [API 设计规范](./docs/standards/STANDARD-07-api-design.md)
 
 ### 代码提交前检查
 

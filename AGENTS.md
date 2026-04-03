@@ -116,6 +116,7 @@
 | 代码风格 | `docs/standards/STANDARD-02-code-style.md` | Checkstyle 检查通过 |
 | DDD 实践 | `docs/standards/STANDARD-03-ddd-practice.md` | 分层架构、依赖规则 |
 | 测试规范 | `docs/standards/STANDARD-04-testing.md` | 单元测试 ≥ 80% |
+| API 设计 | `docs/standards/STANDARD-07-api-design.md` | RESTful 规范、错误码 |
 | E2E 验证 | `docs/standards/STANDARD-06-e2e-verification.md` | API 必须验证可用 |
 
 **后端开发强制流程**：
@@ -158,6 +159,7 @@ npx playwright test           # E2E 测试通过
 | 规范 | 文件 | 说明 |
 |------|------|------|
 | 测试规范 | `docs/standards/STANDARD-04-testing.md` | 测试金字塔、覆盖率要求 |
+| API 设计 | `docs/standards/STANDARD-07-api-design.md` | RESTful 规范、错误码 |
 | E2E 验证 | `docs/standards/STANDARD-06-e2e-verification.md` | 前后端联调验证流程 |
 
 **测试覆盖率要求**：
