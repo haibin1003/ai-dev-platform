@@ -56,4 +56,11 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
         ExecutionJpaEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
     }
+
+    @Override
+    public List<Execution> findAll() {
+        return jpaRepository.findAll().stream()
+            .map(mapper::toDomain)
+            .collect(Collectors.toList());
+    }
 }

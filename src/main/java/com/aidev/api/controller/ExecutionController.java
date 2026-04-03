@@ -25,6 +25,15 @@ public class ExecutionController {
     }
 
     /**
+     * 获取所有执行记录列表。
+     */
+    @GetMapping
+    public ResponseEntity<List<ExecutionResponse>> listExecutions() {
+        List<ExecutionResponse> executions = executionAppService.listAllExecutions();
+        return ResponseEntity.ok(executions);
+    }
+
+    /**
      * 获取执行详情。
      */
     @GetMapping("/{id}")

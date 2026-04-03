@@ -145,6 +145,19 @@ public class ExecutionAppService {
     }
 
     /**
+     * 获取所有执行记录。
+     *
+     * @return 执行响应列表
+     */
+    @Transactional(readOnly = true)
+    public List<ExecutionResponse> listAllExecutions() {
+        List<Execution> executions = executionRepository.findAll();
+        return executions.stream()
+            .map(this::toResponse)
+            .collect(Collectors.toList());
+    }
+
+    /**
      * 重试失败的任务。
      *
      * @param executionId 执行ID

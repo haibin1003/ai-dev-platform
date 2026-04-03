@@ -49,4 +49,11 @@ public interface ExecutionRepository {
      * @return 保存后的执行实例
      */
     Execution save(Execution execution);
+
+    /**
+     * 查找所有执行实例。
+     *
+     * @return 执行实例列表
+     */
+    List<Execution> findAll();
 }
