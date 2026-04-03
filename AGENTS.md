@@ -98,9 +98,79 @@
 
 ---
 
-## 📝 文档规范
+## 📝 规范索引
 
-### 文档类型与位置
+### 🔴 必读基础规范（全员）
+
+| 规范 | 文件 | 说明 |
+|------|------|------|
+| AI 开发规范 | `AGENTS.md` | 红线规定、强制流程 |
+| 工程状态 | `PROJECT_STATUS.md` | 项目进展、待开发功能 |
+| 工程状态维护 | `docs/standards/STANDARD-05-project-status.md` | 状态更新要求 |
+
+### 🟢 后端开发规范
+
+| 规范 | 文件 | 强制要求 |
+|------|------|---------|
+| Git 工作流 | `docs/standards/STANDARD-01-git-workflow.md` | 分支命名、Commit 格式 |
+| 代码风格 | `docs/standards/STANDARD-02-code-style.md` | Checkstyle 检查通过 |
+| DDD 实践 | `docs/standards/STANDARD-03-ddd-practice.md` | 分层架构、依赖规则 |
+| 测试规范 | `docs/standards/STANDARD-04-testing.md` | 单元测试 ≥ 80% |
+| E2E 验证 | `docs/standards/STANDARD-06-e2e-verification.md` | API 必须验证可用 |
+
+**后端开发强制流程**：
+```
+PRD → ARCH → AI 评审 → DESIGN → DEV → CR → QA
+```
+
+**后端提交前检查**：
+```bash
+./mvnw clean test           # 测试通过
+./mvnw checkstyle:check     # 代码风格
+./mvnw spotbugs:check       # Bug 检查
+./mvnw jacoco:check          # 覆盖率 ≥ 80%
+```
+
+### 🟢 前端开发规范
+
+| 规范 | 文件 | 强制要求 |
+|------|------|---------|
+| Git 工作流 | `docs/standards/STANDARD-01-git-workflow.md` | 分支命名、Commit 格式 |
+| 代码风格 | `docs/standards/STANDARD-02-code-style.md` | ESLint/Prettier 检查 |
+| 测试规范 | `docs/standards/STANDARD-04-testing.md` | 单元测试覆盖 |
+| E2E 验证 | `docs/standards/STANDARD-06-e2e-verification.md` | **前端联调必须验证** |
+
+**前端开发强制流程**：
+```
+PRD → ARCH → DESIGN → DEV → E2E 验证 → CR → QA
+```
+
+**前端提交前检查**：
+```bash
+npm run lint                  # ESLint 检查
+npm run test                  # 单元测试
+npm run build                 # 构建成功
+npx playwright test           # E2E 测试通过
+```
+
+### 🟢 测试规范
+
+| 规范 | 文件 | 说明 |
+|------|------|------|
+| 测试规范 | `docs/standards/STANDARD-04-testing.md` | 测试金字塔、覆盖率要求 |
+| E2E 验证 | `docs/standards/STANDARD-06-e2e-verification.md` | 前后端联调验证流程 |
+
+**测试覆盖率要求**：
+
+| 层级 | 覆盖率目标 |
+|------|-----------|
+| Domain | ≥ 95% |
+| Application | ≥ 85% |
+| 整体 | ≥ 80% |
+
+---
+
+### 📋 文档类型与位置
 
 | 文档类型 | 文件命名 | 位置 | 负责人 |
 |---------|---------|------|--------|
@@ -113,7 +183,6 @@
 | 操作手册 | `OPS-{主题}.md` | `docs/operations/` | 运维 |
 | 项目规范 | `STANDARD-*.md` | `docs/standards/` | Tech Lead |
 | 工程状态 | `PROJECT_STATUS.md` | 根目录 | 全员 |
-| E2E 验证 | `STANDARD-06-e2e-verification.md` | docs/standards/ | 全员 |
 
 ### AI 评审模板
 
