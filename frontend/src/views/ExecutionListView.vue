@@ -23,15 +23,19 @@
             {{ formatDate(row.completedAt) }}
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="150" fixed="right">
+        <el-table-column label="操作" width="200" fixed="right">
           <template #default="{ row }">
-            <el-button link type="primary" @click="viewDetail(row.id)">详情</el-button>
+            <el-button link type="primary" @click="viewDetail(row)">
+              <el-icon><View /></el-icon>
+              查看日志
+            </el-button>
             <el-button
               link
               type="danger"
               @click="cancelExecution(row.id)"
               v-if="row.status === 'RUNNING' || row.status === 'PENDING'"
             >
+              <el-icon><CircleClose /></el-icon>
               取消
             </el-button>
           </template>
@@ -40,17 +44,27 @@
 
       <el-empty v-if="executions.length === 0 && !loading" description="暂无执行记录" />
     </el-card>
+
+    <!-- Execution Detail Dialog -->
+    <ExecutionDetailDialog
+      v-model="detailVisible"
+      :execution="selectedExecution"
+      @cancelled="loadExecutions"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import ExecutionDetailDialog from '@/components/execution/ExecutionDetailDialog.vue'
 import { executionApi } from '@/services/workflow'
 import type { WorkflowExecution } from '@/types/workflow'
 
 const executions = ref<WorkflowExecution[]>([])
 const loading = ref(false)
+const detailVisible = ref(false)
+const selectedExecution = ref<WorkflowExecution | undefined>()
 
 const loadExecutions = async () => {
   loading.value = true
@@ -64,8 +78,9 @@ const loadExecutions = async () => {
   }
 }
 
-const viewDetail = (id: string) => {
-  ElMessage.info(`查看执行详情: ${id}`)
+const viewDetail = (row: WorkflowExecution) => {
+  selectedExecution.value = row
+  detailVisible.value = true
 }
 
 const cancelExecution = async (id: string) => {
