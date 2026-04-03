@@ -1,6 +1,7 @@
 package com.aidev.application.service;
 
 import com.aidev.api.dto.CreateWorkflowRequest;
+import com.aidev.api.dto.ExecutionResponse;
 import com.aidev.api.dto.WorkflowResponse;
 import com.aidev.domain.model.aggregate.Workflow;
 import com.aidev.domain.model.entity.Edge;
@@ -86,10 +87,10 @@ public class WorkflowAppService {
         return toResponse(saved);
     }
 
-    public WorkflowController.ExecutionResponse executeWorkflow(String id, java.util.Map<String, String> variables) {
+    public ExecutionResponse executeWorkflow(String id, java.util.Map<String, String> variables) {
         // 简化实现，返回模拟响应
         String executionId = java.util.UUID.randomUUID().toString();
-        return new WorkflowController.ExecutionResponse(
+        return new ExecutionResponse(
             executionId,
             "PENDING",
             "/api/v1/executions/" + executionId

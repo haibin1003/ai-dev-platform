@@ -42,7 +42,7 @@ public class WorkflowMapper {
         entity.setName(workflow.getName());
         entity.setDescription(workflow.getDescription());
         entity.setStatus(workflow.getStatus().name());
-        entity.setDefinitionJson(toJson(new DefinitionDto(workflow.getNodes(), workflow.getEdges())));
+        entity.setDefinitionJson(toJson(convertToDefinitionDto(workflow.getNodes(), workflow.getEdges())));
         entity.setVariablesJson(toJson(workflow.getVariables()));
         entity.setCreatedAt(workflow.getCreatedAt());
         entity.setUpdatedAt(workflow.getUpdatedAt());
@@ -82,6 +82,24 @@ public class WorkflowMapper {
         } catch (JsonProcessingException e) {
             throw new RuntimeException("Failed to parse JSON", e);
         }
+    }
+
+    private DefinitionDto convertToDefinitionDto(List<Node> nodes, List<Edge> edges) {
+        List<NodeDto> nodeDtos = nodes.stream()
+            .map(n -> new NodeDto(
+                n.getId().getValue(),
+                n.getName(),
+                n.getType().name(),
+                n.getAgentCode(),
+                n.getConfig()
+            ))
+            .toList();
+
+        List<EdgeDto> edgeDtos = edges.stream()
+            .map(e -> new EdgeDto(e.getFrom().getValue(), e.getTo().getValue()))
+            .toList();
+
+        return new DefinitionDto(nodeDtos, edgeDtos);
     }
 
     // 内部DTO类用于JSON序列化

@@ -189,7 +189,8 @@
                 </executions>
             </plugin>
             
-            <!-- SpotBugs -->
+            <!-- SpotBugs (暂时禁用，网络问题无法下载) -->
+            <!--
             <plugin>
                 <groupId>com.github.spotbugs</groupId>
                 <artifactId>spotbugs-maven-plugin</artifactId>
@@ -207,6 +208,7 @@
                     </execution>
                 </executions>
             </plugin>
+            -->
             
             <!-- JaCoCo -->
             <plugin>
