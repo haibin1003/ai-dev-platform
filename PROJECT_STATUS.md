@@ -12,7 +12,7 @@
 | PRD-001 工作流引擎需求 | ✅ 完成 | 2026-04-03 | - |
 | ARCH-001 工作流引擎架构 | ✅ 完成 | 2026-04-03 | AI 评审通过 |
 | DESIGN-001 工作流引擎详细设计 | ✅ 完成 | 2026-04-03 | 评审通过 |
-| feature/PRD-001-workflow-engine | 🔄 开发中 | - | Phase 2: 领域服务 |
+| feature/PRD-001-workflow-engine | 🔄 开发中 | - | Phase 5: 测试验证 |
 
 ---
 
