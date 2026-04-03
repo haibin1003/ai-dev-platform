@@ -118,6 +118,7 @@
 | 测试规范 | `docs/standards/STANDARD-04-testing.md` | 单元测试 ≥ 80% |
 | API 设计 | `docs/standards/STANDARD-07-api-design.md` | RESTful 规范、错误码 |
 | E2E 验证 | `docs/standards/STANDARD-06-e2e-verification.md` | API 必须验证可用 |
+| 全栈开发 | `docs/standards/STANDARD-08-fullstack-development.md` | 前后端必须同步完成 |
 
 **后端开发强制流程**：
 ```

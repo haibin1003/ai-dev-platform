@@ -110,6 +110,7 @@ curl -X POST http://localhost:8080/api/v1/workflows/{id}/execute \
 4. [DDD 实践规范](./docs/standards/STANDARD-03-ddd-practice.md)
 5. [测试规范](./docs/standards/STANDARD-04-testing.md)
 6. [API 设计规范](./docs/standards/STANDARD-07-api-design.md)
+7. [全栈开发规范](./docs/standards/STANDARD-08-fullstack-development.md) - 前后端同步开发要求
 
 ### 代码提交前检查
 
