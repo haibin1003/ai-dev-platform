@@ -76,6 +76,7 @@
 | DDD 规范 | docs/standards/STANDARD-03-ddd-practice.md | ✅ 完成 | - |
 | 测试规范 | docs/standards/STANDARD-04-testing.md | ✅ 完成 | - |
 | 工程状态规范 | docs/standards/STANDARD-05-project-status.md | ✅ 完成 | - |
+| E2E 验证规范 | docs/standards/STANDARD-06-e2e-verification.md | ✅ 完成 | - |
 
 ---
 

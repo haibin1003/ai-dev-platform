@@ -113,6 +113,7 @@
 | 操作手册 | `OPS-{主题}.md` | `docs/operations/` | 运维 |
 | 项目规范 | `STANDARD-*.md` | `docs/standards/` | Tech Lead |
 | 工程状态 | `PROJECT_STATUS.md` | 根目录 | 全员 |
+| E2E 验证 | `STANDARD-06-e2e-verification.md` | docs/standards/ | 全员 |
 
 ### AI 评审模板
 
