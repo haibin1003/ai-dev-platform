@@ -49,6 +49,19 @@ export interface WorkflowExecution {
   completedAt?: string
 }
 
+export interface TaskResponse {
+  id: string
+  nodeId: string
+  status: 'PENDING' | 'READY' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED'
+  inputs?: Record<string, string>
+  result?: string
+  errorMessage?: string
+  retryCount: number
+  maxRetries: number
+  startedAt?: string
+  completedAt?: string
+}
+
 export interface NodeShapeConfig {
   shape: string
   width: number

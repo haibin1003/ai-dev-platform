@@ -31,17 +31,27 @@
         </el-descriptions-item>
       </el-descriptions>
 
-      <!-- Log Viewer -->
-      <div class="log-section">
-        <div class="section-header">
-          <h4>执行日志</h4>
-          <el-button v-if="execution?.id" link type="primary" @click="refreshLogs">
-            <el-icon><Refresh /></el-icon>
-            刷新
-          </el-button>
-        </div>
-        <LogViewer v-if="execution?.id" :execution-id="execution.id" class="log-viewer-wrapper" />
-      </div>
+      <!-- Tabs -->
+      <el-tabs v-model="activeTab" class="detail-tabs">
+        <el-tab-pane label="执行日志" name="logs">
+          <div class="section-header">
+            <el-button v-if="execution?.id" link type="primary" @click="refreshLogs">
+              <el-icon><Refresh /></el-icon>
+              刷新日志
+            </el-button>
+          </div>
+          <LogViewer v-if="execution?.id" :execution-id="execution.id" class="viewer-wrapper" />
+        </el-tab-pane>
+
+        <el-tab-pane label="任务列表" name="tasks">
+          <TaskRetryPanel
+            v-if="execution?.id"
+            :execution-id="execution.id"
+            @task-retried="handleTaskRetried"
+            class="viewer-wrapper"
+          />
+        </el-tab-pane>
+      </el-tabs>
     </div>
   </el-dialog>
 </template>
@@ -50,6 +60,7 @@
 import { ref, watch } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import LogViewer from '@/components/log/LogViewer.vue'
+import TaskRetryPanel from './TaskRetryPanel.vue'
 import { executionApi } from '@/services/workflow'
 import type { WorkflowExecution } from '@/types/workflow'
 
@@ -64,6 +75,7 @@ const emit = defineEmits<{
 }>()
 
 const visible = ref(props.modelValue)
+const activeTab = ref('logs')
 
 watch(() => props.modelValue, (val) => {
   visible.value = val
@@ -72,6 +84,10 @@ watch(() => props.modelValue, (val) => {
 watch(() => visible.value, (val) => {
   emit('update:modelValue', val)
 })
+
+const handleTaskRetried = () => {
+  emit('cancelled') // Refresh parent list
+}
 
 const cancelExecution = async () => {
   if (!props.execution?.id) return
@@ -132,25 +148,17 @@ const formatDate = (date?: string) => {
   gap: 20px;
 }
 
-.log-section {
-  display: flex;
-  flex-direction: column;
+.detail-tabs :deep(.el-tabs__content) {
+  padding: 0;
 }
 
 .section-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 12px;
+  justify-content: flex-end;
+  margin-bottom: 8px;
 }
 
-.section-header h4 {
-  margin: 0;
-  font-size: 14px;
-  color: #303133;
-}
-
-.log-viewer-wrapper {
+.viewer-wrapper {
   height: 400px;
   border: 1px solid #dcdfe6;
   border-radius: 4px;
