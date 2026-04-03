@@ -39,20 +39,25 @@ public class DAGScheduler {
 
     private final TaskRepository taskRepository;
     private final ExecutionRepository executionRepository;
+    private final com.aidev.domain.repository.WorkflowRepository workflowRepository;
     private final List<AgentAdapter> agentAdapters;
     private final ApplicationEventPublisher eventPublisher;
     private final ExecutorService executorService;
 
     public DAGScheduler(TaskRepository taskRepository,
                        ExecutionRepository executionRepository,
+                       com.aidev.domain.repository.WorkflowRepository workflowRepository,
                        List<AgentAdapter> agentAdapters,
                        ApplicationEventPublisher eventPublisher) {
         this.taskRepository = taskRepository;
         this.executionRepository = executionRepository;
+        this.workflowRepository = workflowRepository;
         this.agentAdapters = agentAdapters;
         this.eventPublisher = eventPublisher;
-        // 创建动态线程池用于并发任务执行
-        this.executorService = Executors.newCachedThreadPool(r -> {
+        // 创建有界线程池用于并发任务执行
+        int availableProcessors = Runtime.getRuntime().availableProcessors();
+        int maxPoolSize = Math.max(4, availableProcessors * 2);
+        this.executorService = Executors.newFixedThreadPool(maxPoolSize, r -> {
             Thread t = new Thread(r, "dag-scheduler-" + System.nanoTime());
             t.setDaemon(true);
             return t;
@@ -116,7 +121,6 @@ public class DAGScheduler {
      * @param executionId 执行实例ID
      */
     @Async
-    @Transactional(readOnly = true)
     public void scheduleReadyTasks(ExecutionId executionId) {
         logger.debug("Scheduling ready tasks for execution {}", executionId);
 
@@ -157,7 +161,6 @@ public class DAGScheduler {
      *
      * @param task 任务
      */
-    @Transactional
     public void executeTask(Task task) {
         // 重新加载任务以确保状态最新
         Task freshTask = taskRepository.findById(task.getId())
@@ -168,6 +171,11 @@ public class DAGScheduler {
                 freshTask.getId(), freshTask.getStatus());
             return;
         }
+
+        // 获取工作流定义中的边（依赖关系）
+        List<Edge> edges = workflowRepository.findById(freshTask.getWorkflowId())
+            .map(com.aidev.domain.model.aggregate.Workflow::getEdges)
+            .orElse(List.of());
 
         // 开始执行任务
         freshTask.start();
@@ -182,8 +190,8 @@ public class DAGScheduler {
             // 执行任务
             ExecutionResult result = adapter.execute(freshTask);
 
-            // 处理执行结果
-            handleTaskCompleted(freshTask, result);
+            // 处理执行结果（在新事务中）
+            handleTaskCompleted(freshTask, result, edges);
 
         } catch (Exception e) {
             logger.error("Task execution failed: {}", freshTask.getId(), e);
@@ -198,7 +206,7 @@ public class DAGScheduler {
      * @param result 执行结果
      */
     @Transactional
-    public void handleTaskCompleted(Task task, ExecutionResult result) {
+    public void handleTaskCompleted(Task task, ExecutionResult result, List<Edge> edges) {
         logger.info("Task {} completed with exit code {}", task.getId(), result.getExitCode());
 
         // 完成任务
@@ -220,7 +228,7 @@ public class DAGScheduler {
 
         // 检查是否可以调度后续任务
         if (!execution.isComplete()) {
-            scheduleNextTasks(execution, task);
+            scheduleNextTasks(execution, task, edges);
         }
     }
 
@@ -273,9 +281,10 @@ public class DAGScheduler {
      *
      * @param execution 执行实例
      * @param completedTask 已完成的任务
+     * @param edges 工作流边列表（依赖关系）
      */
     @Transactional
-    public void scheduleNextTasks(Execution execution, Task completedTask) {
+    public void scheduleNextTasks(Execution execution, Task completedTask, List<Edge> edges) {
         logger.debug("Checking next tasks after completion of {}", completedTask.getId());
 
         // 获取执行实例中的所有任务
@@ -285,7 +294,7 @@ public class DAGScheduler {
         for (Task task : allTasks) {
             if (task.getStatus() == TaskStatus.PENDING) {
                 // 检查依赖是否满足
-                if (areDependenciesMet(task, allTasks)) {
+                if (areDependenciesMet(task, allTasks, edges)) {
                     task.markReady();
                     taskRepository.save(task);
                     logger.info("Task {} marked as READY (dependencies met)", task.getId());
@@ -304,22 +313,39 @@ public class DAGScheduler {
      *
      * @param task 待检查的任务
      * @param allTasks 执行实例中的所有任务
+     * @param edges 工作流边列表（依赖关系）
      * @return true 如果依赖已满足
      */
-    private boolean areDependenciesMet(Task task, List<Task> allTasks) {
+    private boolean areDependenciesMet(Task task, List<Task> allTasks, List<Edge> edges) {
         // 构建节点ID到任务的映射
         Map<NodeId, Task> nodeTaskMap = allTasks.stream()
             .collect(Collectors.toMap(Task::getNodeId, t -> t));
 
-        // 获取执行实例以获取工作流边（依赖关系）
-        // 这里简化处理，假设任务之间通过工作流定义中的边建立依赖
-        // 实际实现可能需要从Execution或Workflow中获取边信息
+        // 查找该任务对应节点的所有上游节点
+        List<NodeId> upstreamNodes = edges.stream()
+            .filter(edge -> edge.getTo().equals(task.getNodeId()))
+            .map(Edge::getFrom)
+            .toList();
 
-        // 简化实现：检查是否有上游任务未完成
-        // 注意：这需要工作流的边信息来确定依赖关系
-        // 此处假设所有非就绪/运行中的任务都有明确的依赖关系
+        // 如果没有上游节点，依赖已满足
+        if (upstreamNodes.isEmpty()) {
+            return true;
+        }
 
-        return true; // 简化实现，实际需要根据工作流边来判断
+        // 检查所有上游任务是否已完成
+        for (NodeId upstreamNodeId : upstreamNodes) {
+            Task upstreamTask = nodeTaskMap.get(upstreamNodeId);
+            if (upstreamTask == null) {
+                logger.warn("Upstream task not found for node: {}", upstreamNodeId);
+                return false;
+            }
+            // 上游任务必须处于终态（COMPLETED, FAILED, CANCELLED）
+            if (!upstreamTask.getStatus().isTerminal()) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
