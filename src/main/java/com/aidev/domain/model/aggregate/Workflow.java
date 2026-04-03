@@ -301,6 +301,15 @@ public class Workflow {
         return status;
     }
 
+    /**
+     * 检查工作流是否可以执行。
+     *
+     * @return true 如果工作流处于ACTIVE状态
+     */
+    public boolean canExecute() {
+        return status == WorkflowStatus.ACTIVE;
+    }
+
     public LocalDateTime getCreatedAt() {
         return createdAt;
     }

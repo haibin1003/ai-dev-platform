@@ -3,6 +3,7 @@ package com.aidev.api.controller;
 import com.aidev.api.dto.CreateWorkflowRequest;
 import com.aidev.api.dto.ExecutionResponse;
 import com.aidev.api.dto.WorkflowResponse;
+import com.aidev.application.service.ExecutionAppService;
 import com.aidev.application.service.WorkflowAppService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -22,9 +23,12 @@ import java.util.List;
 public class WorkflowController {
 
     private final WorkflowAppService workflowAppService;
+    private final ExecutionAppService executionAppService;
 
-    public WorkflowController(WorkflowAppService workflowAppService) {
+    public WorkflowController(WorkflowAppService workflowAppService,
+                             ExecutionAppService executionAppService) {
         this.workflowAppService = workflowAppService;
+        this.executionAppService = executionAppService;
     }
 
     @PostMapping
@@ -62,10 +66,16 @@ public class WorkflowController {
     public ResponseEntity<ExecutionResponse> executeWorkflow(
             @PathVariable String id,
             @RequestBody(required = false) ExecuteWorkflowRequest request) {
-        ExecutionResponse response = workflowAppService.executeWorkflow(
+        ExecutionResponse response = executionAppService.startExecution(
             id, request != null ? request.variables() : null
         );
         return ResponseEntity.accepted().body(response);
+    }
+
+    @GetMapping("/{id}/executions")
+    public ResponseEntity<List<ExecutionResponse>> getWorkflowExecutions(@PathVariable String id) {
+        List<ExecutionResponse> executions = executionAppService.getExecutionsByWorkflow(id);
+        return ResponseEntity.ok(executions);
     }
 
     public record ExecuteWorkflowRequest(java.util.Map<String, String> variables) {}
