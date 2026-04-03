@@ -9,6 +9,7 @@ import com.aidev.infrastructure.persistence.entity.ExecutionJpaEntity;
 import com.aidev.infrastructure.persistence.mapper.ExecutionMapper;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -60,6 +61,20 @@ public class ExecutionRepositoryImpl implements ExecutionRepository {
     @Override
     public List<Execution> findAll() {
         return jpaRepository.findAll().stream()
+            .map(mapper::toDomain)
+            .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<Execution> findByConditions(
+            WorkflowId workflowId,
+            ExecutionStatus status,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+        String workflowIdStr = workflowId != null ? workflowId.getValue() : null;
+        String statusStr = status != null ? status.name() : null;
+
+        return jpaRepository.findByConditions(workflowIdStr, statusStr, startTime, endTime).stream()
             .map(mapper::toDomain)
             .collect(Collectors.toList());
     }

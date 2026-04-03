@@ -16,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -145,13 +146,27 @@ public class ExecutionAppService {
     }
 
     /**
-     * 获取所有执行记录。
+     * 获取所有执行记录（支持筛选）。
      *
+     * @param workflowId 工作流ID
+     * @param status 状态
+     * @param startTime 开始时间
+     * @param endTime 结束时间
      * @return 执行响应列表
      */
     @Transactional(readOnly = true)
-    public List<ExecutionResponse> listAllExecutions() {
-        List<Execution> executions = executionRepository.findAll();
+    public List<ExecutionResponse> listExecutions(
+            String workflowId,
+            String status,
+            LocalDateTime startTime,
+            LocalDateTime endTime) {
+
+        WorkflowId workflowIdObj = workflowId != null ? WorkflowId.of(workflowId) : null;
+        ExecutionStatus statusObj = status != null ? ExecutionStatus.valueOf(status) : null;
+
+        List<Execution> executions = executionRepository.findByConditions(
+            workflowIdObj, statusObj, startTime, endTime);
+
         return executions.stream()
             .map(this::toResponse)
             .collect(Collectors.toList());

@@ -101,6 +101,14 @@ export const workflowApi = {
     return backends.map(fromBackendWorkflow)
   },
 
+  // 工作流列表
+  async list(): Promise<Workflow[]> {
+    const res = await fetch(API_BASE)
+    if (!res.ok) throw new Error('获取工作流列表失败')
+    const backends: BackendWorkflow[] = await res.json()
+    return backends.map(fromBackendWorkflow)
+  },
+
   // 获取单个工作流
   async get(id: string): Promise<Workflow> {
     const res = await fetch(`${API_BASE}/${id}`)

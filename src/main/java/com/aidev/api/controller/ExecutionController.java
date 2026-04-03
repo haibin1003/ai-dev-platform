@@ -3,9 +3,11 @@ package com.aidev.api.controller;
 import com.aidev.api.dto.ExecutionResponse;
 import com.aidev.api.dto.TaskResponse;
 import com.aidev.application.service.ExecutionAppService;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -25,11 +27,18 @@ public class ExecutionController {
     }
 
     /**
-     * 获取所有执行记录列表。
+     * 获取所有执行记录列表（支持筛选）。
      */
     @GetMapping
-    public ResponseEntity<List<ExecutionResponse>> listExecutions() {
-        List<ExecutionResponse> executions = executionAppService.listAllExecutions();
+    public ResponseEntity<List<ExecutionResponse>> listExecutions(
+            @RequestParam(required = false) String workflowId,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime startTime,
+            @RequestParam(required = false)
+            @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime endTime) {
+        List<ExecutionResponse> executions = executionAppService.listExecutions(
+            workflowId, status, startTime, endTime);
         return ResponseEntity.ok(executions);
     }
 

@@ -56,4 +56,20 @@ public interface ExecutionRepository {
      * @return 执行实例列表
      */
     List<Execution> findAll();
+
+    /**
+     * 根据条件查询执行实例（支持分页和筛选）。
+     *
+     * @param workflowId 工作流ID（可选）
+     * @param status 状态（可选）
+     * @param startTime 开始时间（可选）
+     * @param endTime 结束时间（可选）
+     * @return 执行实例列表
+     */
+    List<Execution> findByConditions(
+        WorkflowId workflowId,
+        ExecutionStatus status,
+        java.time.LocalDateTime startTime,
+        java.time.LocalDateTime endTime
+    );
 }
