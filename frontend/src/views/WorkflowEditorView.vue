@@ -80,7 +80,7 @@ import TaskNode from '@/components/workflow/nodes/TaskNode.vue'
 import EndNode from '@/components/workflow/nodes/EndNode.vue'
 
 import { workflowApi } from '@/services/workflow'
-import type { Workflow, WorkflowDefinition } from '@/types/workflow'
+import type { Workflow, WorkflowDefinition, WorkflowNode } from '@/types/workflow'
 
 // 注册Vue节点组件
 register({
@@ -201,6 +201,7 @@ const initGraph = () => {
         },
       },
     },
+    // @ts-ignore - history plugin config not in X6 types
     history: {
       enabled: true,
     },
@@ -492,7 +493,7 @@ const hasCycle = (nodes: Node[], edges: Edge[]): boolean => {
 const getGraphDefinition = (): WorkflowDefinition => {
   if (!graph) return { nodes: [], edges: [] }
 
-  const nodes = graph.getNodes().map((n) => ({
+  const nodes: WorkflowNode[] = graph.getNodes().map((n) => ({
     id: n.id,
     type: n.shape === 'start-node' ? 'START' : n.shape === 'end-node' ? 'END' : 'TASK',
     label: n.getData()?.label || n.shape,

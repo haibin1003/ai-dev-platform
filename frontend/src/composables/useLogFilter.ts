@@ -13,6 +13,7 @@ export interface UseLogFilterReturn {
   filteredLogs: Ref<LogMessage[]>
   logCounts: Ref<Record<string, number>>
   setFilterLevel: (level: LogLevel) => void
+  clearSearch: () => void
 }
 
 export function useLogFilter(options: UseLogFilterOptions): UseLogFilterReturn {
@@ -49,8 +50,9 @@ export function useLogFilter(options: UseLogFilterOptions): UseLogFilterReturn {
     }
 
     options.logs.value.forEach((log) => {
-      if (counts[log.level] !== undefined) {
-        counts[log.level]++
+      const key = log.level as LogLevel | 'ALL'
+      if (key !== 'ALL' && counts[key] !== undefined) {
+        counts[key]!++
       }
     })
 
@@ -61,10 +63,15 @@ export function useLogFilter(options: UseLogFilterOptions): UseLogFilterReturn {
     filterLevel.value = level
   }
 
+  const clearSearch = () => {
+    filterLevel.value = 'ALL'
+  }
+
   return {
     filterLevel,
     filteredLogs,
     logCounts,
     setFilterLevel,
+    clearSearch,
   }
 }

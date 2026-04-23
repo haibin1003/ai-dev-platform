@@ -37,7 +37,7 @@ describe('useLogFilter', () => {
 
     filterLevel.value = 'WARN'
     expect(filteredLogs.value).toHaveLength(1)
-    expect(filteredLogs.value[0].level).toBe('WARN')
+    expect(filteredLogs.value[0]!.level).toBe('WARN')
   })
 
   it('should filter logs by ERROR level', () => {
@@ -47,7 +47,7 @@ describe('useLogFilter', () => {
 
     filterLevel.value = 'ERROR'
     expect(filteredLogs.value).toHaveLength(1)
-    expect(filteredLogs.value[0].level).toBe('ERROR')
+    expect(filteredLogs.value[0]!.level).toBe('ERROR')
   })
 
   it('should filter logs by search keyword in message', () => {
@@ -56,7 +56,7 @@ describe('useLogFilter', () => {
     const { filteredLogs } = useLogFilter({ logs, searchKeyword })
 
     expect(filteredLogs.value).toHaveLength(1)
-    expect(filteredLogs.value[0].message).toContain('Warning')
+    expect(filteredLogs.value[0]!.message).toContain('Warning')
   })
 
   it('should filter logs by search keyword in taskId', () => {
@@ -65,7 +65,7 @@ describe('useLogFilter', () => {
     const { filteredLogs } = useLogFilter({ logs, searchKeyword })
 
     expect(filteredLogs.value).toHaveLength(1)
-    expect(filteredLogs.value[0].taskId).toBe('task-1')
+    expect(filteredLogs.value[0]!.taskId).toBe('task-1')
   })
 
   it('should be case insensitive for search', () => {
@@ -83,8 +83,8 @@ describe('useLogFilter', () => {
 
     filterLevel.value = 'INFO'
     expect(filteredLogs.value).toHaveLength(1)
-    expect(filteredLogs.value[0].level).toBe('INFO')
-    expect(filteredLogs.value[0].message).toContain('message')
+    expect(filteredLogs.value[0]!.level).toBe('INFO')
+    expect(filteredLogs.value[0]!.message).toContain('message')
   })
 
   it('should return empty array when no logs match', () => {

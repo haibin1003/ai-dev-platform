@@ -69,7 +69,9 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue'
+
+const props = defineProps<{
   canUndo?: boolean
   canRedo?: boolean
   status?: 'unsaved' | 'saved' | 'modified'
@@ -95,10 +97,6 @@ const statusMap = {
 
 const statusType = computed(() => statusMap[props.status || 'unsaved'].type)
 const statusText = computed(() => statusMap[props.status || 'unsaved'].text)
-</script>
-
-<script lang="ts">
-import { computed } from 'vue'
 </script>
 
 <style scoped>
