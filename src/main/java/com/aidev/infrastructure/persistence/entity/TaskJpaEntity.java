@@ -52,6 +52,9 @@ public class TaskJpaEntity {
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @Column(name = "tenant_id", length = 64)
+    private String tenantId;
+
     @Version
     private Long version;
 
@@ -87,4 +90,6 @@ public class TaskJpaEntity {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public Long getVersion() { return version; }
     public void setVersion(Long version) { this.version = version; }
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
 }

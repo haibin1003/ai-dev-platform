@@ -6,7 +6,9 @@ import com.aidev.domain.model.valueobject.WorkflowStatus;
 import com.aidev.domain.repository.WorkflowRepository;
 import com.aidev.infrastructure.persistence.entity.WorkflowJpaEntity;
 import com.aidev.infrastructure.persistence.mapper.WorkflowMapper;
+import com.aidev.infrastructure.tenant.TenantContext;
 import org.springframework.stereotype.Repository;
+import java.util.function.Predicate;
 
 import java.util.List;
 import java.util.Optional;
@@ -32,12 +34,14 @@ public class WorkflowRepositoryImpl implements WorkflowRepository {
     @Override
     public Optional<Workflow> findById(WorkflowId id) {
         return jpaRepository.findById(id.getValue())
+            .filter(tenantFilter())
             .map(mapper::toDomain);
     }
 
     @Override
     public List<Workflow> findAll() {
         return jpaRepository.findAll().stream()
+            .filter(tenantFilter())
             .map(mapper::toDomain)
             .collect(Collectors.toList());
     }
@@ -45,6 +49,7 @@ public class WorkflowRepositoryImpl implements WorkflowRepository {
     @Override
     public List<Workflow> findByStatus(WorkflowStatus status) {
         return jpaRepository.findByStatus(status.name()).stream()
+            .filter(tenantFilter())
             .map(mapper::toDomain)
             .collect(Collectors.toList());
     }
@@ -52,12 +57,27 @@ public class WorkflowRepositoryImpl implements WorkflowRepository {
     @Override
     public Workflow save(Workflow workflow) {
         WorkflowJpaEntity entity = mapper.toEntity(workflow);
+        String tenantId = TenantContext.current();
+        if (tenantId != null) {
+            entity.setTenantId(tenantId);
+        }
         WorkflowJpaEntity saved = jpaRepository.save(entity);
         return mapper.toDomain(saved);
     }
 
     @Override
     public void delete(WorkflowId id) {
-        jpaRepository.deleteById(id.getValue());
+        jpaRepository.findById(id.getValue())
+            .filter(tenantFilter())
+            .ifPresent(jpaRepository::delete);
+    }
+
+    private Predicate<WorkflowJpaEntity> tenantFilter() {
+        String tenantId = TenantContext.current();
+        if (tenantId == null) {
+            // 平台级访问：可见所有数据
+            return e -> true;
+        }
+        return e -> tenantId.equals(e.getTenantId());
     }
 }
