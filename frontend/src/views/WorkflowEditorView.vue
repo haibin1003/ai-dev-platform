@@ -270,7 +270,24 @@ const onDrop = (e: DragEvent) => {
   const { x, y } = graph.clientToLocal(e.clientX, e.clientY)
 
   const nodeId = `${nodeConfig.shape}-${Date.now()}`
-  const node = graph.addNode({
+  const ports: { items: Array<{ id: string; group: string; attrs?: any }> } = { items: [] }
+
+  if (nodeConfig.shape !== 'start-node') {
+    ports.items.push({
+      id: 'in',
+      group: 'in',
+      attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
+    })
+  }
+  if (nodeConfig.shape !== 'end-node') {
+    ports.items.push({
+      id: 'out',
+      group: 'out',
+      attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
+    })
+  }
+
+  graph.addNode({
     id: nodeId,
     shape: nodeConfig.shape,
     x: x - nodeConfig.width / 2,
@@ -278,29 +295,8 @@ const onDrop = (e: DragEvent) => {
     data: {
       label: nodeConfig.label,
     },
-    ports: {
-      items: [
-        { id: 'in', group: 'in' },
-        { id: 'out', group: 'out' },
-      ],
-    },
+    ports,
   })
-
-  // 添加锚点样式
-  if (nodeConfig.shape !== 'start-node') {
-    node.addPort({
-      id: 'in',
-      group: 'in',
-      attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
-    })
-  }
-  if (nodeConfig.shape !== 'end-node') {
-    node.addPort({
-      id: 'out',
-      group: 'out',
-      attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
-    })
-  }
 
   markModified()
 }
@@ -544,7 +540,24 @@ const loadGraphDefinition = (definition: WorkflowDefinition) => {
     const shape =
       nodeDef.type === 'START' ? 'start-node' : nodeDef.type === 'END' ? 'end-node' : 'task-node'
 
-    const node = graph.addNode({
+    const ports: { items: Array<{ id: string; group: string; attrs?: any }> } = { items: [] }
+
+    if (shape !== 'start-node') {
+      ports.items.push({
+        id: 'in',
+        group: 'in',
+        attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
+      })
+    }
+    if (shape !== 'end-node') {
+      ports.items.push({
+        id: 'out',
+        group: 'out',
+        attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
+      })
+    }
+
+    graph.addNode({
       id: nodeDef.id,
       shape,
       x: nodeDef.position.x,
@@ -553,23 +566,8 @@ const loadGraphDefinition = (definition: WorkflowDefinition) => {
         label: nodeDef.label,
         ...nodeDef.properties,
       },
+      ports,
     })
-
-    // 添加端口
-    if (shape !== 'start-node') {
-      node.addPort({
-        id: 'in',
-        group: 'in',
-        attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
-      })
-    }
-    if (shape !== 'end-node') {
-      node.addPort({
-        id: 'out',
-        group: 'out',
-        attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
-      })
-    }
   }
 
   // 添加边
@@ -640,11 +638,11 @@ onMounted(() => {
             x: 100,
             y: 200,
             data: { label: '开始' },
-          })
-          startNode.addPort({
-            id: 'out',
-            group: 'out',
-            attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
+            ports: {
+              items: [
+                { id: 'out', group: 'out', attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } } },
+              ],
+            },
           })
 
           const endNode = graph.addNode({
@@ -653,11 +651,11 @@ onMounted(() => {
             x: 400,
             y: 200,
             data: { label: '结束' },
-          })
-          endNode.addPort({
-            id: 'in',
-            group: 'in',
-            attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } },
+            ports: {
+              items: [
+                { id: 'in', group: 'in', attrs: { circle: { magnet: true, r: 6, fill: '#fff', stroke: '#5F95FF', strokeWidth: 2 } } },
+              ],
+            },
           })
 
           graph.addEdge({
