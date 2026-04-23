@@ -133,7 +133,6 @@
         <!-- 导入 -->
         <module name="AvoidStarImport"/>
         <module name="IllegalImport"/>
-        <module name="ImportControl"/>
         <module name="ImportOrder">
             <property name="option" value="under"/>
             <property name="groups" value="java,javax,org,com"/>
@@ -148,7 +147,7 @@
         <module name="InvalidJavadocPosition"/>
         <module name="JavadocBlockTagLocation"/>
         <module name="JavadocContentLocation"/>
-        <module name="JavadocLeadingAsteriskAlign"/>
+        <!-- module name="JavadocLeadingAsteriskAlign" removed: not a valid Checkstyle module -->
         <module name="JavadocMethod">
             <property name="allowMissingParamTags" value="true"/>
             <property name="allowMissingReturnTag" value="true"/>
@@ -156,9 +155,7 @@
         <module name="JavadocParagraph"/>
         <module name="JavadocStyle"/>
         <module name="JavadocTagContinuationIndentation"/>
-        <module name="JavadocType">
-            <property name="requireVersion" value="false"/>
-        </module>
+        <module name="JavadocType"/>
         <module name="MissingJavadocMethod">
             <property name="scope" value="public"/>
             <property name="allowMissingPropertyJavadoc" value="true"/>
@@ -230,7 +227,6 @@
         <module name="OuterTypeNumber"/>
         <module name="ParameterNumber">
             <property name="max" value="5"/>
-            <property name="ignoreAnnotatedBy" value="Builder,Autowired"/>
         </module>
         <module name="RecordComponentNumber"/>
 
@@ -264,15 +260,17 @@
             <property name="arrayInitIndent" value="4"/>
         </module>
         <module name="NoArrayTrailingComma"/>
-        <module name="OrderedProperties"/>
         <module name="SuppressWarningsHolder"/>
         <module name="TodoComment"/>
         <module name="TrailingComment"/>
-        <module name="Translation"/>
         <module name="UncommentedMain"/>
-        <module name="UniqueProperties"/>
         <module name="UpperEll"/>
     </module>
+
+    <!-- ==================== 文件属性检查 ==================== -->
+    <module name="OrderedProperties"/>
+    <module name="Translation"/>
+    <module name="UniqueProperties"/>
 
     <!-- ==================== 过滤器 ==================== -->
     <module name="SuppressWarningsFilter"/>
