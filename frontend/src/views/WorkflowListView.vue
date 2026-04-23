@@ -111,7 +111,7 @@ const deleteWorkflow = async (id: string) => {
 const getStatusType = (status?: string) => {
   const map: Record<string, string> = {
     DRAFT: 'info',
-    PUBLISHED: 'success',
+    ACTIVE: 'success',
     ARCHIVED: 'danger',
   }
   return map[status || 'DRAFT'] || 'info'
@@ -120,7 +120,7 @@ const getStatusType = (status?: string) => {
 const getStatusText = (status?: string) => {
   const map: Record<string, string> = {
     DRAFT: '草稿',
-    PUBLISHED: '已发布',
+    ACTIVE: '已激活',
     ARCHIVED: '已归档',
   }
   return map[status || 'DRAFT'] || status

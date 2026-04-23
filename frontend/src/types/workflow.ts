@@ -29,7 +29,7 @@ export interface Workflow {
   name: string
   description?: string
   definition: WorkflowDefinition
-  status?: 'DRAFT' | 'PUBLISHED' | 'ARCHIVED'
+  status?: 'DRAFT' | 'ACTIVE' | 'ARCHIVED'
   createdAt?: string
   updatedAt?: string
 }
