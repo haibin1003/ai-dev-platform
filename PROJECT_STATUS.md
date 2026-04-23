@@ -24,7 +24,8 @@
 | TASK-BREAKDOWN-001 | ✅ 完成 | 2026-04-21 | 46 个任务，6 个 Phase，约 72 人天 |
 | 前端 TS 错误修复 | ✅ 完成 | 2026-04-21 | 11 个编译错误全部修复 |
 | Checkstyle 修复 | ✅ 完成 | 2026-04-21 | LeftCurry → LeftCurly |
-| **Phase 1 开发启动** | 🚀 进行中 | 2026-04-21 | feature/phase1-infrastructure |
+| **Phase 1 基础设施** | ✅ 完成 | 2026-04-23 | 已合并 master，100 测试通过 |
+| **Phase 2 LLM+Agent 核心** | 🚀 待开始 | - | 详见 TASK-BREAKDOWN-001 |
 
 ---
 
@@ -34,26 +35,23 @@
 
 - **负责人**: AI Assistant
 - **目标**: 将现有工作流引擎升级为支持多 Agent + LLM 接入 + 项目沙箱隔离的 AI 研发协同平台
-- **当前阶段**: Phase 1 基础设施开发（Week 1）
-- **已完成**:
-  - [x] PRD-003: 需求文档编写
-  - [x] ARCH-002: 架构设计文档
-  - [x] DESIGN-002: 详细设计文档
-  - [x] Agent PoC: 后端启动 Claude Code → SSE 推流 → 前端渲染，成功执行 Bash 统计
-  - [x] 技术调研: Claude Code / Kimi Code / OpenCode 对接能力
-- **已完成（预热）**:
+- **当前阶段**: Phase 2 LLM + Agent 核心开发（Week 2-3）
+- **已完成（Phase 1 基础设施 — 2026-04-23）**:
+  - [x] T-1.1 Checkstyle 配置全面修复（配置可正常加载，历史代码 1179 个违规待清理）
+  - [x] T-1.2 ToolbarPanel.vue Props 编译修复
+  - [x] T-1.3 前后端状态枚举统一（PUBLISHED → ACTIVE）
+  - [x] T-1.4 多租户基础（TenantContext + TenantInterceptor + TenantConfig + Repository 自动过滤）
+  - [x] T-1.5 AES-256-GCM 加密服务（加密/解密/密钥轮换）
+  - [x] T-1.6 X6 编辑器端口配置修复（消除重复端口 ID 冲突）
   - [x] 前端 11 个 TypeScript 编译错误全部修复
-  - [x] Checkstyle 配置修复（LeftCurry → LeftCurly）
   - [x] .gitignore 添加 node_modules/ 等前端忽略项
-- **进行中（Phase 1）**:
-  - [ ] 多租户基础（TenantContext + TenantConfig）
-  - [ ] AES-256 加密服务
-  - [ ] 前端端口重复/丢失修复
-- **待开始（Phase 1 基础设施）**:
-  - [ ] 多租户基础（TenantContext + TenantConfig）
-  - [ ] AES-256 加密服务
-  - [ ] 前端端口重复/丢失修复
-- **待开始（Phase 2 Agent 核心）**:
+- **设计文档已完成（无需重复开发）**:
+  - [x] PRD-003 v2.0: 需求文档
+  - [x] ARCH-002 v2.0: 架构设计
+  - [x] DESIGN-002 v2.0: 详细设计
+  - [x] TASK-BREAKDOWN-001: 46 个任务拆解
+  - [x] Agent PoC: Claude Code SSE 端到端验证
+- **Phase 2 待开始**:
   - [ ] LLM Provider 管理
   - [ ] Agent 模板管理
   - [ ] Agent 实例生命周期（启动/终止/暂停/恢复）
@@ -96,11 +94,11 @@
 
 | 功能 | ID | 类型 | 后端 | 前端 | 联调 | 状态 | 备注 |
 |------|-----|------|------|------|------|------|------|
-| Checkstyle 修复 | F-05-1 | 配置 | ✅ | - | - | ✅ 完成 | LeftCurry → LeftCurly |
-| 多租户基础 | F-05-2 | 纯后端 | 🚀 | - | - | 🚀 进行中 | TenantContext + 自动过滤 |
-| AES-256 加密 | F-05-3 | 纯后端 | ⬜ | - | - | ⬜ 未开始 | API Key 加密存储 |
+| Checkstyle 修复 | F-05-1 | 配置 | ✅ | - | - | ✅ 完成 | 配置可加载，历史违规 1179 个待清理 |
+| 多租户基础 | F-05-2 | 纯后端 | ✅ | - | - | ✅ 完成 | TenantContext + 自动过滤 |
+| AES-256 加密 | F-05-3 | 纯后端 | ✅ | - | - | ✅ 完成 | API Key 加密存储 |
 | 前端 TS 修复 | F-05-4 | 纯前端 | - | ✅ | - | ✅ 完成 | 11 个 TS 错误全部修复 |
-| X6 端口修复 | F-05-5 | 纯前端 | - | ⬜ | - | ⬜ 未开始 | 重复/丢失问题 |
+| X6 端口修复 | F-05-5 | 纯前端 | - | ✅ | - | ✅ 完成 | 消除重复端口 ID 冲突 |
 
 ### Phase 2: LLM + Agent 核心（Week 2-3）
 
@@ -260,6 +258,7 @@ npm run build
 | 2026-04-21 | **ARCH-002 v2.0 升级** | AI Assistant | AgentPersona + ScenarioTemplate + ReplicaAgent |
 | 2026-04-21 | **DESIGN-002 v2.0 升级** | AI Assistant | PromptTemplateEngine + Heartbeat + AgentStartupCleaner |
 | 2026-04-21 | **开发启动**：Phase 1 基础设施 | AI Assistant | 修复 TS 错误 + Checkstyle，创建 feature/phase1-infrastructure |
+| 2026-04-23 | **Phase 1 完成**：基础设施全部合并 master | AI Assistant | T-1.1~T-1.6 全部完成，100 测试通过，推送远程 |
 
 ---
 
