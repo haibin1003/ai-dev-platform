@@ -44,7 +44,7 @@
         <module name="EmptyCatchBlock">
             <property name="exceptionVariableName" value="expected|ignored"/>
         </module>
-        <module name="LeftCurry">
+        <module name="LeftCurly">
             <property name="option" value="EOL"/>
         </module>
         <module name="NeedBraces"/>
